@@ -15,6 +15,17 @@ class ProductController extends GetxController {
     super.onInit();
   }
 
+  bool _isVisible = false;
+
+  void onVisible(bool visible) {
+    if (visible && !_isVisible) {
+      _isVisible = true;
+      fetchProducts(); // fetch fresh data when page is visible
+    } else if (!visible) {
+      _isVisible = false;
+    }
+  }
+
   Future<void> fetchProducts() async {
     loading.value = true;
     final token = await storage.read(key: 'access');
@@ -29,6 +40,7 @@ class ProductController extends GetxController {
         .toList();
 
     loading.value = false;
+    update();
   }
 
   Future<void> deleteProduct(int id) async {

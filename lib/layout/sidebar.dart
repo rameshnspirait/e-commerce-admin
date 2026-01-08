@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../routes/app_routes.dart';
+import 'sidebar_controller.dart';
 
-class Sidebar extends StatelessWidget {
-  const Sidebar({super.key});
+class SidebarWidget extends StatelessWidget {
+  SidebarWidget({super.key});
+
+  final SidebarController ctrl = Get.find();
+
+  final menuItems = const [
+    {'icon': Icons.dashboard, 'title': 'Dashboard'},
+    {'icon': Icons.shopping_bag, 'title': 'Products'},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,32 +25,37 @@ class Sidebar extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
-          SizedBox(height: 20),
-          _menuItem(
-            icon: Icons.dashboard,
-            title: 'Dashboard',
-            onTap: () => Get.offNamed(Routes.dashboard),
-          ),
-
-          _menuItem(
-            icon: Icons.shopping_bag,
-            title: 'Products',
-            onTap: () => Get.offNamed(Routes.products),
-          ),
+          const SizedBox(height: 20),
+          Obx(() {
+            return Column(
+              children: List.generate(menuItems.length, (index) {
+                final selected = ctrl.currentIndex.value == index;
+                final item = menuItems[index];
+                return ListTile(
+                  leading: Icon(
+                    item['icon'] as IconData,
+                    color: selected ? Colors.blue : Colors.white,
+                  ),
+                  title: Text(
+                    item['title'] as String,
+                    style: TextStyle(
+                      color: selected ? Colors.blue : Colors.white,
+                      fontWeight: selected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                  ),
+                  selected: selected,
+                  selectedTileColor: Colors.white.withOpacity(0.1),
+                  onTap: () {
+                    ctrl.changeIndex(index);
+                  },
+                );
+              }),
+            );
+          }),
         ],
       ),
-    );
-  }
-
-  Widget _menuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white),
-      title: Text(title, style: TextStyle(color: Colors.white)),
-      onTap: onTap,
     );
   }
 }

@@ -8,43 +8,48 @@ import 'product_model.dart';
 class ProductPage extends StatelessWidget {
   ProductPage({super.key});
 
-  final ProductController ctrl = Get.put(ProductController());
+  final ProductController ctrl = Get.find<ProductController>();
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Text(
-              'Products',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-
-                textStyle: const TextStyle(fontSize: 16, color: Colors.white),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+        // ================= HEADER =================
+        Padding(
+          padding: const EdgeInsets.only(left: 20, right: 20, top: 30),
+          child: Row(
+            children: [
+              const Text(
+                'Products',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
-              icon: const Icon(Icons.add),
-              label: const Text('Add Product'),
-              onPressed: () {
-                Get.dialog(
-                  ProductForm(onSuccess: ctrl.fetchProducts),
-                  barrierDismissible: false,
-                );
-              },
-            ),
-          ],
+              const Spacer(),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
+                ),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Product'),
+                onPressed: () {
+                  Get.dialog(
+                    ProductForm(onSuccess: ctrl.fetchProducts),
+                    barrierDismissible: false,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
+
         const SizedBox(height: 20),
+
+        // ================= GRID =================
         Expanded(
           child: Obx(() {
             if (ctrl.loading.value) {
@@ -55,22 +60,24 @@ class ProductPage extends StatelessWidget {
               return const Center(child: Text('No products found'));
             }
 
-            return PlutoGrid(
-              columns: _columns(),
-              rows: _rows(ctrl.products),
-              configuration: PlutoGridConfiguration(
-                columnSize: const PlutoGridColumnSizeConfig(
-                  autoSizeMode: PlutoAutoSizeMode.scale,
-                ),
-                style: PlutoGridStyleConfig(
-                  gridBorderColor: Colors.grey.shade300,
-                  oddRowColor: Colors.grey.shade50,
-                  borderColor: Colors.grey.shade300,
-                  gridBorderRadius: BorderRadius.circular(12),
-                  activatedColor: Colors.blue.withOpacity(0.08),
-                  rowHeight: 52,
-
-                  columnHeight: 52,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: PlutoGrid(
+                columns: _columns(),
+                rows: _rows(ctrl.products),
+                configuration: PlutoGridConfiguration(
+                  columnSize: const PlutoGridColumnSizeConfig(
+                    autoSizeMode: PlutoAutoSizeMode.scale,
+                  ),
+                  style: PlutoGridStyleConfig(
+                    gridBorderRadius: BorderRadius.circular(12),
+                    gridBorderColor: Colors.grey.shade300,
+                    borderColor: Colors.grey.shade300,
+                    activatedColor: Colors.blue.withOpacity(0.08),
+                    rowHeight: 56,
+                    columnHeight: 56,
+                    oddRowColor: Colors.grey.shade50,
+                  ),
                 ),
               ),
             );
@@ -87,36 +94,54 @@ class ProductPage extends StatelessWidget {
         title: 'ID',
         field: 'id',
         type: PlutoColumnType.number(),
-        width: 80,
-        enableSorting: true,
+        width: 60,
         textAlign: PlutoColumnTextAlign.center,
         titleTextAlign: PlutoColumnTextAlign.center,
+      ),
+      PlutoColumn(
+        title: 'Image',
+        field: 'image',
+        type: PlutoColumnType.text(),
+        enableSorting: false,
+        width: 80,
+        textAlign: PlutoColumnTextAlign.center,
+        titleTextAlign: PlutoColumnTextAlign.center,
+        renderer: (ctx) {
+          final String? url = ctx.cell.value;
+          if (url == null || url.isEmpty) {
+            return const Icon(
+              Icons.image_not_supported,
+              size: 24,
+              color: Colors.grey,
+            );
+          }
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(url, width: 50, height: 50, fit: BoxFit.cover),
+          );
+        },
       ),
       PlutoColumn(
         title: 'Product Name',
         field: 'name',
         type: PlutoColumnType.text(),
-        enableSorting: true,
-        titleTextAlign: PlutoColumnTextAlign.center,
         textAlign: PlutoColumnTextAlign.center,
+        titleTextAlign: PlutoColumnTextAlign.center,
       ),
       PlutoColumn(
         title: 'Price',
         field: 'price',
         type: PlutoColumnType.number(),
-        enableSorting: true,
         textAlign: PlutoColumnTextAlign.center,
         titleTextAlign: PlutoColumnTextAlign.center,
-        renderer: (ctx) {
-          return Text(
-            '₹${ctx.cell.value}',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.green.shade700,
-              fontWeight: FontWeight.w500,
-            ),
-          );
-        },
+        renderer: (ctx) => Text(
+          '₹${ctx.cell.value}',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.green.shade700,
+          ),
+        ),
       ),
       PlutoColumn(
         title: 'Stock',
@@ -155,10 +180,10 @@ class ProductPage extends StatelessWidget {
         textAlign: PlutoColumnTextAlign.center,
         titleTextAlign: PlutoColumnTextAlign.center,
         renderer: (ctx) {
-          final Product product = ctx.row.cells['actions']!.value;
+          final Product product = ctx.cell.value;
 
           return Row(
-            mainAxisAlignment: .center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _actionButton(
                 icon: Icons.edit,
@@ -173,7 +198,7 @@ class ProductPage extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               _actionButton(
                 icon: Icons.delete,
                 color: Colors.red,
@@ -192,6 +217,7 @@ class ProductPage extends StatelessWidget {
       return PlutoRow(
         cells: {
           'id': PlutoCell(value: p.id),
+          'image': PlutoCell(value: p.imageUrl), // <-- Add image URL here
           'name': PlutoCell(value: p.name),
           'price': PlutoCell(value: p.price),
           'stock': PlutoCell(value: p.stock),
@@ -209,9 +235,9 @@ class ProductPage extends StatelessWidget {
       textCancel: 'Cancel',
       textConfirm: 'Delete',
       confirmTextColor: Colors.white,
-      onConfirm: () {
+      onConfirm: () async {
         Get.back();
-        ctrl.deleteProduct(id);
+        await ctrl.deleteProduct(id);
       },
     );
   }

@@ -42,6 +42,7 @@ dependencies:
   google_fonts: ^7.0.0
   get: ^4.7.3
   pluto_grid: ^8.1.0
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:

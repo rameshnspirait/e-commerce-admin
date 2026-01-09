@@ -1,30 +1,32 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 import '../../core/constants.dart';
-import '../../core/storage.dart';
+import '../../core/app_storage.dart';
 
 class AuthService {
-  Future<bool> login(String username, String password) async {
+  Future<void> login(String user, String pass) async {
     final res = await http.post(
       Uri.parse('${AppConstants.baseUrl}/api/auth/login/'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'username': username, 'password': password}),
+      body: jsonEncode({'username': user, 'password': pass}),
     );
 
-    if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      await storage.write(key: 'access', value: data['access']);
-      await storage.write(key: 'refresh', value: data['refresh']);
-      return true;
+    if (res.statusCode != 200) {
+      throw Exception('Invalid credentials');
     }
-    return false;
-  }
 
-  Future<bool> isLoggedIn() async {
-    return await storage.read(key: 'access') != null;
+    final data = jsonDecode(res.body);
+
+    // ✅ Save tokens using GetStorage
+    await AppStorage.saveTokens(
+      access: data['access'],
+      refresh: data['refresh'],
+    );
   }
 
   Future<void> logout() async {
-    await storage.deleteAll();
+    // ✅ Clear all stored data
+    AppStorage.clear();
   }
 }
